@@ -1,3 +1,7 @@
+logging:
+   level:
+      root: INFO
+
 server:
    port: ${PORT:0}
 
@@ -16,6 +20,14 @@ spring:
          enabled: true
          settings:
             web-allow-others: true
+            
+management:
+   endpoints:
+      exposure:
+         include: '*'
+   endpoint:
+      health:
+         show-details: always
 eureka:
    client:
       serviceUrl:

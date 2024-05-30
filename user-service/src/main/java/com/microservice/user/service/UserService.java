@@ -1,6 +1,7 @@
 package com.microservice.user.service;
 
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.UUID;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -9,7 +10,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.google.common.base.Optional;
 import com.microservice.user.model.UserEntity;
 import com.microservice.user.model.request.UserRequest;
 import com.microservice.user.model.response.UserResponse;
@@ -54,7 +54,6 @@ public class UserService implements IUserService {
 
   @Override
   public UserResponse getUserDetailsByEmail(String email) {
-    // TODO Auto-generated method stub
     Optional<UserEntity> optUser = userRepository.findByEmail(email);
     if (!optUser.isPresent()) {
       throw new UsernameNotFoundException("User not found.");

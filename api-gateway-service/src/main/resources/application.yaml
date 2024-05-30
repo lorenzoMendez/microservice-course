@@ -1,41 +1,64 @@
+logging:
+   level:
+      root: INFO
+      
 server:
-   port: 8082
+  port: 8082
+
+#spring.cloud.gateway.discovery.locator.enabled=true
+#spring.cloud.gateway.discovery.locator.lower-case-service-id=true
 
 spring:
-   application:
-      name: api-gateway-service
-   cloud:
-      gateway:
-         discovery:
-            locator:
-               enabled: true
-               lower-case-service-id: true
-         routes:
-            - id: users-service
-              uri: lb://user-service
-              predicates:
-                 - Path=/user-service/users
-                 - Method=POST
-              filtes:
-                - RemoveRequestHeader=Cookie
-                - RewritePath=/user-service/(?<segment>.*), /$\{segment}
-            - id: users-service-h2-console
-              uri: lb://user-service/h2-console
-              predicates:
-                 - Path=/user-service/h2-console
-                 - Method=GET
-              filtes:
-                - RemoveRequestHeader=Cookie
-                - RewritePath=/user-service/(?<segment>.*), /$\{segment}
-            - id: users-service-login
-              uri: lb://user-service
-              predicates:
-                 - Path=/user-service/users/login
-                 - Method=POST
-              filtes:
-                - RemoveRequestHeader=Cookie
-                - RewritePath=/user-service/(?<segment>.*), /$\{segment}
+  application:
+    name: api-gateway-service
+  cloud:
+    gateway:
+      routes:
+        - id: users-status-check
+          uri: lb://user-service
+          predicates:
+            - Path=/user-service/users/status-check
+            - Method=GET
+            - Header=Authorization, Bearer (.*)
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/user-service/(?<segment>.*), /$\{segment}
+#            - AuthorizationHeaderFilter
+        - id: users-service-create
+          uri: lb://user-service
+          predicates:
+            - Path=/user-service/users
+            - Method=POST
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/user-service/(?<segment>.*), /$\{segment}
+        - id: users-service-login
+          uri: lb://user-service
+          predicates:
+            - Path=/user-service/users/login
+            - Method=POST
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/user-service/(?<segment>.*), /$\{segment}
+        - id: users-service-h2-console
+          uri: lb://user-service/h2-console
+          predicates:
+            - Path=/user-service/h2-console
+            - Method=GET
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/user-service/(?<segment>.*), /$\{segment}
+        - id: users-service-get-update-delete
+          uri: lb://user-service
+          predicates:
+            - Path=/user-service/users/**
+            - Method=GET,PUT,DELETE
+            - Header=Authorization, Bearer (.*)
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/user-service/(?<segment>.*), /$\{segment}
+            - AuthorizationHeaderFilter
 eureka:
-   client:
-      serviceUrl:
-         defaultZone: http://localhost:8761/eureka
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka

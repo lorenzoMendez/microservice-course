@@ -1,8 +1,8 @@
 package com.microservice.user.repository;
 
+import java.util.Optional;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
-import com.google.common.base.Optional;
 import com.microservice.user.model.UserEntity;
 
 @Repository

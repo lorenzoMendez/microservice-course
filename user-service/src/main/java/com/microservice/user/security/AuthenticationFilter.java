@@ -22,12 +22,14 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
   private final IUserService userService;
-  
-  private static final String TOKEN_SECRET = "$2a$10$aQLVfyMS/XCoxh.Mdc4yi.l840alP2ybDclEacfAeG3Jwx1VpjuOi";
+
+  private static final String TOKEN_SECRET = "QQkXrgx0YEH01PIqwAMMGRMfDEH2vyywbWxziaQzKQGS5SvEZrfHHGguKqQX8DxV";
 
   public AuthenticationFilter(AuthenticationManager authenticationManager,
       IUserService userService) {
@@ -38,9 +40,9 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
   @Override
   public Authentication attemptAuthentication(HttpServletRequest request,
       HttpServletResponse response) throws AuthenticationException {
-    LoginRequest credential;
     try {
-      credential = new ObjectMapper().readValue(request.getInputStream(), LoginRequest.class);
+      log.info("attemptAuthentication method....");
+      LoginRequest credential = new ObjectMapper().readValue(request.getInputStream(), LoginRequest.class);
       return getAuthenticationManager().authenticate(new UsernamePasswordAuthenticationToken(
           credential.getEmail(), credential.getPassword(), new ArrayList<>()));
     } catch (IOException ex) {
@@ -49,17 +51,19 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
   }
 
   @Override
-  protected void successfulAuthentication(HttpServletRequest req, HttpServletResponse res, FilterChain chain,
-      Authentication auth) throws IOException, ServletException {
+  protected void successfulAuthentication(HttpServletRequest req, HttpServletResponse res,
+      FilterChain chain, Authentication auth) throws IOException, ServletException {
     String userName = ((User) auth.getPrincipal()).getUsername();
     UserResponse userDetail = userService.getUserDetailsByEmail(userName);
     byte[] secretKeyBytes = Base64.getEncoder().encode(TOKEN_SECRET.getBytes());
     SecretKey secretKey = Keys.hmacShaKeyFor(secretKeyBytes);
     Instant now = Instant.now();
-    String token = Jwts.builder().subject(userDetail.getUserId())
-        .expiration(Date.from(now.plusSeconds(60))).issuedAt(Date.from(now)).signWith(secretKey).compact();
+    String token =
+        Jwts.builder().subject(userDetail.getUserId()).expiration(Date.from(now.plusMillis(3600000)))
+            .issuedAt(Date.from(now)).signWith(secretKey).compact();
+    log.info("Token generated: {}", token);
     res.addHeader("token", token);
     res.addHeader("userId", userDetail.getUserId());
   }
-
+  
 }

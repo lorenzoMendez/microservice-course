@@ -11,6 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import com.microservice.user.service.IUserService;
+import jakarta.ws.rs.HttpMethod;
 
 @Configuration
 @EnableWebSecurity
@@ -27,15 +28,14 @@ public class WebSecurity {
 
   @Bean
   protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
-    // Configure AuthenticationManagerBuilder.
+    // Configure AuthenticationManagerBuilder
     AuthenticationManagerBuilder authenticationManagerBuilder =
         http.getSharedObject(AuthenticationManagerBuilder.class);
 
-    // Aplicar configuraciones al AuthenticationManagerBuilder
+    // Configure user detail authentication service.
     authenticationManagerBuilder.userDetailsService(userService)
         .passwordEncoder(bCryptPasswordEncoder);
 
-    // Construir el AuthenticationManager
     AuthenticationManager authenticationManager = authenticationManagerBuilder.build();
 
     // Create AuthenticationFilter
@@ -43,15 +43,18 @@ public class WebSecurity {
         new AuthenticationFilter(authenticationManager, userService);
     authenticationFilter.setFilterProcessesUrl("/users/login");
 
-    http.authorizeHttpRequests(
-        requests -> requests.requestMatchers(new AntPathRequestMatcher("/users", "POST"))
-            .permitAll().requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll())
-        .csrf(csrf -> csrf.disable())
+    http.csrf((csrf) -> csrf.disable())
+        .authorizeHttpRequests((auth) -> auth
+            .requestMatchers(new AntPathRequestMatcher("/users", HttpMethod.POST)).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/users/status-check", HttpMethod.GET)).authenticated()
+            .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll())
+        .addFilter(authenticationFilter).authenticationManager(authenticationManager)
         .sessionManagement(
-            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .headers((headers) -> headers.frameOptions((options) -> options.sameOrigin()))
-        .addFilter(authenticationFilter).authenticationManager(authenticationManager);
+            (session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .headers((header) -> header.frameOptions((frameOptions) -> frameOptions.sameOrigin()));
+
     return http.build();
   }
+
 }
 
