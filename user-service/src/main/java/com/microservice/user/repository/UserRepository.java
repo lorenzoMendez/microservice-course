@@ -9,4 +9,6 @@ import com.microservice.user.model.UserEntity;
 public interface UserRepository extends CrudRepository<UserEntity, Long> {
   
   Optional<UserEntity> findByEmail(String email);
+  
+  Optional<UserEntity> findByUserId(String email);
 }

@@ -13,4 +13,7 @@ public interface IUserService extends UserDetailsService {
   UserResponse createUser(UserRequest request);
   
   UserResponse getUserDetailsByEmail(String email);
+  
+  UserResponse getUserByUserId(String userId);
+  
 }

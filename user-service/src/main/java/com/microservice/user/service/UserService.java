@@ -1,6 +1,7 @@
 package com.microservice.user.service;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.modelmapper.ModelMapper;
@@ -10,21 +11,29 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.microservice.user.client.album.IAlbumServiceClient;
 import com.microservice.user.model.UserEntity;
 import com.microservice.user.model.request.UserRequest;
+import com.microservice.user.model.response.AlbumResponse;
 import com.microservice.user.model.response.UserResponse;
 import com.microservice.user.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 public class UserService implements IUserService {
 
   private final UserRepository userRepository;
 
   private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-  public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+  private final IAlbumServiceClient albumService;
+
+  public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder,
+      IAlbumServiceClient albumService) {
     this.userRepository = userRepository;
     this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+    this.albumService = albumService;
   }
 
   @Override
@@ -59,6 +68,20 @@ public class UserService implements IUserService {
       throw new UsernameNotFoundException("User not found.");
     }
     return new ModelMapper().map(optUser.get(), UserResponse.class);
+  }
+  
+  @Override
+  public UserResponse getUserByUserId(String userId) {
+    log.info("Retrieve user and albums related to it: {}", userId);
+    Optional<UserEntity> optionalUser = userRepository.findByUserId(userId);
+    if (optionalUser.isEmpty()) {
+      log.error("User not found in database: {}", userId);
+      throw new UsernameNotFoundException("UserId not found in database.");
+    }
+    UserResponse response = new ModelMapper().map(optionalUser.get(), UserResponse.class);
+    List<AlbumResponse> albums = albumService.getAlbums(userId);
+    response.setAlbums(albums);
+    return response;
   }
 
 }

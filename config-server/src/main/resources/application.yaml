@@ -1,6 +1,11 @@
 server:
    port: 8888
 
+management:
+   endpoints:
+      web:
+         exposure:
+            include: busrefresh
 spring:
    profiles:
       active: native
@@ -9,11 +14,11 @@ spring:
    cloud:
       config:
          server:
-            git:
-               uri: https://github.com/lorenzoMendez/config-service-repository
-               username: {x}
-               password: {x}
-               clone-on-start: true
-               default-label: main
-#            native:
-#               search-locations: file:///C:/Users/Lorenzo/OneDrive/Documentos/microservice-course/config-service-repository
+#            git:
+#               uri: {}
+#               username: {}
+#               password: {}
+#               clone-on-start: true
+#               default-label: main
+            native:
+               search-locations: file:///C:/Users/Lorenzo/OneDrive/Documentos/microservice-course/config-service-repository

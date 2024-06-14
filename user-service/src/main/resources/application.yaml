@@ -1,36 +1,43 @@
 logging:
    level:
       root: INFO
-
+   com.microservice.user.client.album.IAlbumServiceClient: DEBUG
+custom:
+   properties:
+      env: DEV
 server:
    port: ${PORT:0}
-
 spring:
    application:
       name: user-service
    datasource:
-      url: jdbc:h2:mem:mydb
-      username: sa
-      password: x
-      driverClassName: org.h2.Driver
+      #url: jdbc:h2:mem:mydb
+      #username: sa
+      #password: x
+      #driverClassName: org.h2.Driver
+      url: jdbc:mysql://localhost:3306/app_db_micro_tpdc?serverTimeZone=UTC
+      username: lorenzo
+      password: "{cipher}AYArmlgewdXVx26aYb6P0aXQezI2x+fFSOljQ5U1RUxZMjUM+8FpOax8iOMeEP/f6LrKpshPnqjMLC8y8y4VRZodyOrSeuFev3xvpzmV5qRLahy27Sz01A859c6JeGv/vry/+F0xfCcbV+35YhkWIshok8+CeIKCtLaBih4rlFfKM6Gd45e8lrkLFWDo/sRDx025gJukjAHgTWjUmtRRbmPaLEGVCzsCbFwfy2jixZzllRTFIpHbWTpfyAReiLLC3/lSkJ4vX04J0fHXBjDmsFn3x+MbztBC5qmanVuXhKHej9OWI1WaRacK1/6a/IKNQ6c7RSjxq6JRfqMqfjgQ3Orh129LhAJBopjdaKT/uwZyT6T6RWM4ZgqL+m8AKZGUCs2AneAkHl/67js2mrHdWE2S5NpF2/KjW4a0O1otpXZC3rKz14tFcuhnTA8mCxFLFU9xTCGh3CJc+1rTHRTtRxckfoXQCjC/nrdbuq+seFlrxCFnPThoKRmLlE2g1nb7kChcJvIwDm0qmQFzsrysSoZjEocihdVI2gHyrOD1qM7fuA=="
+      
    jpa:
-      database-platform: org.hibernate.dialect.H2Dialect
+      #database-platform: org.hibernate.dialect.H2Dialect
+      hibernate:
+         ddl-auto: update
    h2:
       console:
          enabled: true
          settings:
             web-allow-others: true
-            
 management:
    endpoints:
-      exposure:
-         include: '*'
-   endpoint:
-      health:
-         show-details: always
+      web:
+         exposure:
+            include: health,mappings,beans,info
 eureka:
    client:
       serviceUrl:
          defaultZone: http://localhost:8761/eureka
    instance:
       instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+token:
+   secret: "{cipher}AYC0Mxk9ALGUd+aJYqal5dnoGDlM1HqmWF/mDJIjWFsDrlsdDegfCk5icFlqHYqhLc5/LsGOhs3/2tlVyZouv0XI98uKMW9YOHeQ4M7jcuoKpajUfbdlYgg9noNXKIaHeGYg5xO91612qrb2tz5bYAlfh/Ji0JxGROkc9P+UT09ng+iv8mydRfZwaqFYRl2VZRKOZFUBHqKPD2TtV0rP8hi0qdtXxFOqyU9TUXLQIEwJBNP0Jkf32gGFfLEFhjqtZCrdm8dUKoIo/rLb3C6MJxY+xi9B+cmb170bZiPCa+Y2dHddR/KPmfsOOsFGGosi1JZk2kDxyo4U4pR/MnOgNbVorl6Pa6JXGrozKnBs8+Hk2PUI/AK9/OZQO6JF1/lehCSH3J/47BGWY/KJpuv8nwtvBlPG2u06HGCHmkRsYtunAqBogq+Do22H7nFQRH7ccDp4Ehw0oZWzIO2Lap4T15Fs+2Vq1H51twyx3kJ+g8sqVeqAvTezIrzngdna/ag4rqQkuioMzy0iwyY3c0iYvNBjJX9r4O3yNIS7Czq1Ffm5NTBA90lIf0UBJhGexrfmdtEEHicmd5DV/I3nYD3rJEo0W+lbHD5zRM32FKIUGXGMQYrput/Uk6XViLHROWbWXlM="

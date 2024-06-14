@@ -1,0 +1,19 @@
+logging:
+   level:
+      root: DEBUG
+server:
+   port: ${PORT:0}
+spring:
+   application:
+      name: album-service
+management:
+   endpoints:
+      web:
+         exposure:
+            include: health, mappings, beans, info
+eureka:
+   client:
+      serviceUrl:
+         defaultZone: http://localhost:8761/eureka
+   instance:
+      instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}

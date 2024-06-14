@@ -9,25 +9,32 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import com.microservice.user.service.IUserService;
 import jakarta.ws.rs.HttpMethod;
+import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @EnableWebSecurity
+@Slf4j
 public class WebSecurity {
 
   private final IUserService userService;
 
   private final BCryptPasswordEncoder bCryptPasswordEncoder;
+  
+  private final JwtAuthorizationFilter jwtAuthorizationFilter;
 
-  public WebSecurity(IUserService userService, BCryptPasswordEncoder bCryptPasswordEncoder) {
+  public WebSecurity(IUserService userService, BCryptPasswordEncoder bCryptPasswordEncoder, JwtAuthorizationFilter jwtAuthorizationFilter) {
     this.userService = userService;
     this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+    this.jwtAuthorizationFilter = jwtAuthorizationFilter;
   }
 
   @Bean
   protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
+    log.info("User service configuration init.....");
     // Configure AuthenticationManagerBuilder
     AuthenticationManagerBuilder authenticationManagerBuilder =
         http.getSharedObject(AuthenticationManagerBuilder.class);
@@ -46,9 +53,12 @@ public class WebSecurity {
     http.csrf((csrf) -> csrf.disable())
         .authorizeHttpRequests((auth) -> auth
             .requestMatchers(new AntPathRequestMatcher("/users", HttpMethod.POST)).permitAll()
-            .requestMatchers(new AntPathRequestMatcher("/users/status-check", HttpMethod.GET)).authenticated()
-            .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll())
-        .addFilter(authenticationFilter).authenticationManager(authenticationManager)
+            .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/actuator/**", HttpMethod.GET)).permitAll()
+            .anyRequest().authenticated())
+        .addFilter(authenticationFilter)
+        .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
+        .authenticationManager(authenticationManager)
         .sessionManagement(
             (session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .headers((header) -> header.frameOptions((frameOptions) -> frameOptions.sameOrigin()));

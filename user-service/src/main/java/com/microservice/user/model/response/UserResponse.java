@@ -1,6 +1,7 @@
 package com.microservice.user.model.response;
 
 import java.io.Serializable;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -21,4 +22,5 @@ public class UserResponse implements Serializable {
   private String userId;
   
   private Long id;
-}
+  
+  private List<AlbumResponse> albums;}

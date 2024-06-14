@@ -1,18 +1,18 @@
 logging:
    level:
       root: INFO
-      
 server:
   port: 8082
-
 #spring.cloud.gateway.discovery.locator.enabled=true
 #spring.cloud.gateway.discovery.locator.lower-case-service-id=true
-
 spring:
   application:
     name: api-gateway-service
   cloud:
     gateway:
+      httpclient:
+        connect-timeout: 10000
+        response-timeout: 50000
       routes:
         - id: users-status-check
           uri: lb://user-service
@@ -23,7 +23,7 @@ spring:
           filters:
             - RemoveRequestHeader=Cookie
             - RewritePath=/user-service/(?<segment>.*), /$\{segment}
-#            - AuthorizationHeaderFilter
+            - name: AuthorizationHeaderFilter
         - id: users-service-create
           uri: lb://user-service
           predicates:
@@ -52,13 +52,32 @@ spring:
           uri: lb://user-service
           predicates:
             - Path=/user-service/users/**
-            - Method=GET,PUT,DELETE
+            - Method=GET
             - Header=Authorization, Bearer (.*)
           filters:
             - RemoveRequestHeader=Cookie
             - RewritePath=/user-service/(?<segment>.*), /$\{segment}
-            - AuthorizationHeaderFilter
+            - name: AuthorizationHeaderFilter
+        - id: users-service-actuator
+          uri: lb://user-service
+          predicates:
+            - Path=/user-service/actuator/**
+            - Method=GET
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/user-service/(?<segment>.*), /$\{segment}
 eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://localhost:8761/eureka
+   client:
+      serviceUrl:
+         defaultZone: http://localhost:8761/eureka
+   instance:
+      instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+management:
+   endpoints:
+      web:
+         exposure:
+            include: gateway,health,mappings
+   endpoint:
+      gateway.enabled: true
+token:
+   secret: "{cipher}AYC0Mxk9ALGUd+aJYqal5dnoGDlM1HqmWF/mDJIjWFsDrlsdDegfCk5icFlqHYqhLc5/LsGOhs3/2tlVyZouv0XI98uKMW9YOHeQ4M7jcuoKpajUfbdlYgg9noNXKIaHeGYg5xO91612qrb2tz5bYAlfh/Ji0JxGROkc9P+UT09ng+iv8mydRfZwaqFYRl2VZRKOZFUBHqKPD2TtV0rP8hi0qdtXxFOqyU9TUXLQIEwJBNP0Jkf32gGFfLEFhjqtZCrdm8dUKoIo/rLb3C6MJxY+xi9B+cmb170bZiPCa+Y2dHddR/KPmfsOOsFGGosi1JZk2kDxyo4U4pR/MnOgNbVorl6Pa6JXGrozKnBs8+Hk2PUI/AK9/OZQO6JF1/lehCSH3J/47BGWY/KJpuv8nwtvBlPG2u06HGCHmkRsYtunAqBogq+Do22H7nFQRH7ccDp4Ehw0oZWzIO2Lap4T15Fs+2Vq1H51twyx3kJ+g8sqVeqAvTezIrzngdna/ag4rqQkuioMzy0iwyY3c0iYvNBjJX9r4O3yNIS7Czq1Ffm5NTBA90lIf0UBJhGexrfmdtEEHicmd5DV/I3nYD3rJEo0W+lbHD5zRM32FKIUGXGMQYrput/Uk6XViLHROWbWXlM="

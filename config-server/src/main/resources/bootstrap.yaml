@@ -1,0 +1,5 @@
+encrypt:
+   key-store:
+      location: file:C:/Users/Lorenzo/OneDrive/Documentos/key_store/api_key_store.jks
+      password: "234igdRGt5%#"
+      alias: "apiEncryptionKey"
